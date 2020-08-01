@@ -4,14 +4,21 @@ CP386 Assignment number 4
 ## Motivation
 To create a program which implements the Banker's algorithm
 ## Installation
-Oracle VM Virtual Box
-Copy files to your Machine Folder then to you directory 
-Run in Oracle VM Virtual Box
-Easier to make a new directory for clean and organized purposes
+1. Oracle VM Virtual Box
+
+2. Copy files to your Machine Folder then to you directory 
+
+3. Run in Oracle VM Virtual Box
+
+4. Easier to make a new directory for clean and organized purposes
 mkdir a4
+
 cp /sf_Machine_Folder/a4.c .
+
 cp /sf_Machine_Folder/makefile .
+
 make
+
 ./a4 10 5 7 8
 ## Screenshots
 please go to 
