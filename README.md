@@ -4,6 +4,9 @@ CP386 Assignment number 4
 To create a program which implements the Banker's algorithm
 ## Installation
 ## Screenshots
+
+
 ## Individual Contributions
+
 ## Features
   Use the Banker's algorithm 
