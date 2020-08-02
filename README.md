@@ -25,9 +25,9 @@ please go to
 https://drive.google.com/file/d/1Qw5rONlYGfLXPScdimiKcfWFFNt_PNaD/view?usp=sharing
 
 ## Individual Contributions
-Earnestina Petergeorge - Testing, figuring out a bankers algorithm, helped with figuring out a code for the algorithm, readInput
+Earnestina Petergeorge - Testing, figuring out a bankers algorithm, helped with figuring out a code for the algorithm, readInput,safe_stat()
 
-Gulnar Saharya - Makefile, implementing code for receiving file, main function,readFile
+Gulnar Saharya - Makefile, implementing code for receiving file, main function,readFile, executed, matrix_p
 
 Mostly collaborated for all
 
