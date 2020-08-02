@@ -25,7 +25,7 @@ please go to
 https://drive.google.com/file/d/1Qw5rONlYGfLXPScdimiKcfWFFNt_PNaD/view?usp=sharing
 
 ## Individual Contributions
-Earnestina Petergeorge - Testing, figuring out a bankers algorithm, helped with figuring out a code for the algorithm
+Earnestina Petergeorge - Testing, figuring out a bankers algorithm, helped with figuring out a code for the algorithm, readInput
 
 Gulnar Saharya - Makefile, implementing code for receiving file, main function,readFile
 
