@@ -1,479 +1,341 @@
+//Gulnar Saharya & Earnestina Petergeorge
+ //GitHub Login ID: TinaPetergeorge
+ //160673540
+ //GitHub Repository: https://github.com/TinaPetergeorge/CP386A4
+ //August 1 2020
+ //CP386: Assignment 4
+
+
+
+
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
 #include <sys/stat.h>
 #include <time.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <semaphore.h>
-#define MAX_INPUT_SIZE 256
-#define FILE_NAME "sample4_in.txt"
-/* Variables that must be defined outside the functions in order to be used as a universal variable in this program
-*/
-int customer_sum;
-int resource_sum;
-int b,t
-int **max;
-int **allocate;
-int **need_array;
-int *available;
-int *s_array;
-int safety_count;
-void *thread_run(void *t);
-int *getS_array();
-int **readFile(char *fileName);
-// Now must define pointers, defining two for the single and double pointers
-void printDoublePointerData(int **data, int m, int n);
-void printSinglePointerData(int *data, int m);
-// Programming the main function that will access and run the set algorithm that will help //users to simulate the bankers algorithm as though they are using the bank outsourcing //the investments and etc
-int main(int argc, char *argv[])
+#include <sys/mman.h>
+#include <stdbool.h>
+
+#define Size 10 
+pthread_mutex_t lock; 
+int max[Size][Size]; 
+int available[Size]; 
+int allocate[Size][Size]; 
+int needed[Size][Size]; 
+int used[Size];
+int available_b[Size]; 
+bool Finish[Size]; 
+struct dimentions{ 
+    int r;
+    int o;
+}temp;
+typedef struct thread// used to represent a single thread.
 {
-    if (argc < 2)
-    {
-        printf("ERROR\n");
+    int thread_id;
+    int state;
+    pthread_t handle;
+    int retVal;
+} Thread;
+
+// must used variables
+int readInput(void);
+int readFile(void);
+int safe_state(void);
+void matrix_p(void); 
+int executed(void); 
+void* run_thread(void* t);
+
+int main(int argc, const char * argv[]) {
+// main function to utilize the inputs and be able to output message
+   // count to loop in 
+    int count;
+	// count = 0;
+// start of if statements so that we can check if there will be an input    
+if(argc < 3){ 
+        printf(" Invalid exiting code\n");
         return -1;
+    }else{ 
+      // this is where we will be collecting the data   
+        for(count=0;count<argc-1;count++)
+            available[count] = atoi(argv[count+1]);
     }
-    resource_sum = argc - 1;
-    
-    available = malloc(sizeof(int) * resource_sum);
-    for (int g = 1; g < argc; g++)
-    {
-        available[g - 1] = atoi(argv[g]);
+    // doing threading the pthread_mutex helps us create the first parameter which will //then be pointing to the very first index
+    if (pthread_mutex_init(&lock, NULL) != 0) { 
+        //initialize mutex lock for null 
+        printf("\n failed mutex initialize \n");
+        return 1;
+// ensure that you are returning a variable or else will have errors
     }
-// this will help store the array that we will need to use 
-   // we must read the file
-    max = readFile(FILE_NAME);
-// this helps put the max number inside the file 
-    allocate = malloc(sizeof(int *) * customer_sum);
-    need_array = malloc(sizeof(int *) * customer_sum);
-    for (int g = 0; g < customer_sum; g++)
-    {
-        allocate[g] = malloc(sizeof(int) * resource_sum);
-        need_array[g] = malloc(sizeof(int) * resource_sum);
+    // this is in order to help the users be able to see the number of customers when they // ask for this input 
+    printf("number of customers: %d \n", count);
+   // when doing this ensure that you will collect the data by using following
+    readFile(); 
+   // this is another key information for users
+  printf("max resources available:\n");
+// we must do this by creating a double for loop ensuring that the array has a value for //both column and row  
+  for (int i = 0; i < temp.r; i++) {
+        for (int j = 0; j < temp.o; j++) {
+            printf("%d ", max[i][j]);
+        }
+        printf("\n");
     }
-
-    safety_count = 0;
-  //intialie as a var with it base num
-    char *userCommand = malloc(sizeof(char) * MAX_INPUT_SIZE);
-    printf("The amount of customers would therefore be: %d\n", customer_sum);
-    printf("This is the avaible resources presented: ");
-    printSinglePointerData(available, resource_sum);
-    printf("Max :\n");
-    printDoublePointerData(max, customer_sum, resource_sum);
+// after we have come out of this we are displaying the resources available by once //again going into a for loop    
+printf(" resources available: :\n");
+    for (int j = 0; j < temp.o; j++) {
+        printf("%d ", available[j]);
+    }
+    printf("\n");
+    readInput(); 
+    // ensuring that we do the one of the most vital pieces checking if it is safe or unsafe
+    if(safe_state() == 1){
+        return 0;
+    }
    
-    while (1)
-    {
-        printf("What is the command that you would like to enter: ");
-        fgets(userCommand, MAX_INPUT_SIZE, stdin);
-        // Replace new line character with end of line character
-        if (strlen(userCommand) > 0 && userCommand[strlen(userCommand) - 1] == '\n')
-        {
-            userCommand[strlen(userCommand) - 1] = '\0';
-        }
-        /**
-         * 
-         * HANDLE USER INPUT CASES BELOW
-         * 
-         * */
-        if (strstr(userCommand, "RQ"))
-        {
-           //split and store
-            int count = 0;
-            int *inputArray = malloc(sizeof(int) * (resource_sum + 1));
-            char *token = NULL;
-            token = strtok(userCommand, " ");
-            while (token != NULL)
-            {
-                if (count > 0)
-                {
-                    inputArray[count - 1] = atoi(token);
-                }
-                token = strtok(NULL, " ");
-                count++;
-            }
-            int customerToAllocate = inputArray[0];
-      
-            if (customerToAllocate < customer_sum && count == resource_sum + 2)
-            {
-                for (int g = 0; g < resource_sum; g++)
-                {
-                    allocate[customerToAllocate][g] = inputArray[g + 1];
-                    need_array_array[customerToAllocate][g] = max[customerToAllocate][g] - allocate[customerToAllocate][g];
-                    
-                    if (need_array[customerToAllocate][g] < 0)
-                    {
-                        need_array[customerToAllocate][g] = 0;
-                    }
-               //ERROR CHECKING DONE
-			    }
-            }
-            else
-            {
-                if (customerToAllocate >= customer_sum)
-                {
-                    printf("ERROR \n");
-                }
-                else
-                {
-                    printf("ERROR TRY AGAIN.\n");
-                }
-            }
-            free(inputArray);
-            // ALGORITHM START
-            s_array = getS_array();
-      
-            if (s_array[0] == -1)
-            {
-                safety_count = 0;
-                printf("UNSAFE\n");
-            }
-            else
-            {
-                safety_count = 1;
-                printf("SAFE\n");
-            }
-        }
-        else if (strstr(userCommand, "RL"))
-        {
-          
-            int count = 0;
-            int *inputArray = malloc(sizeof(int) * (resource_sum + 1));
-            char *token = NULL;
-            token = strtok(userCommand, " ");
-            while (token != NULL)
-            {
-                if (count > 0)
-                {
-                    inputArray[count - 1] = atoi(token);
-                }
-                token = strtok(NULL, " ");
-                count++;
-            }
-			 //ensure the tokenize process split get var repeat
-			 //inputAray[0];
-			 //customerToAllocate = 0;
-            int customerToAllocate = inputArray[0];
-          
-
-
-/*
-parse second line number of instances of each resource type
-fgets (buffer,MAX,fike);
-i=0;
-we’ll use a tokenizer to split the string on spaces
-tmp = strtok(buffer,” “);
-while (tmp!= NULL){
-Available[i] = atoi(tmp);
-tmp = strtok(NULL,” “);
-i++;
+/* uncomment this if we’re not using checkCompletion() and allocate()
+For (i-0;i<resources;i++)
+if(Request[i]>Available[i])
+return;// this process has to wait
+for(i=0;i<resources;i++)
+Available[i]-=Request[i];
+Allocation[proess][i]+=Request[i];
+Need[process][i] -=Request[i];
 }
-
 */
+//allocate the resource to the process
 
-            if (customerToAllocate < customer_sum && count == resource_sum + 2)
-            {
-                for (int g = 0; g < resource_sum; g++)
-                {
-                    if (inputArray[g + 1] <= allocate[customerToAllocate][g])
-                    {
-                        allocate[customerToAllocate][g] -= inputArray[g + 1];
-                        need_array[customerToAllocate][g] = max[customerToAllocate][g] - allocate[customerToAllocate][g];
-                    }
-                    else
-                    {
-                     
-                        break;
-                    }
-                }
+    executed(); 
+    // make sur mutex very key or code will not run 
+    pthread_mutex_destroy(&lock);
+    return 0;
+}
+// ensuring the readFile is there so we can grab and extract data
+
+//printf("Banker's Algorithm");
+// assume unsafe state
+//int safe = FALSE;
+//  Work array
+	//int *Work;
+	//if (!(Work = malloc(resources * sizeof(int))))
+		//return -1;
+
+int readFile(){
+    int c;
+    FILE *file;
+    int r = 0;
+    int o = 0;
+    file = fopen("sample4_in.txt", "r");
+    if (file) {
+         
+        while ((c = getc(file)) != EOF){
+            if(r == 0 && c==','){
+                o++;
             }
-            else
-            {
-                if (customerToAllocate >= customer_sum)
-                {
-                    printf("ERROR TRY AGAIN\n");
-                }
-                else
-                {
-                    printf("ERROR NUMBER TRY AGAIN.\n");
-                }
-            }
-            free(inputArray);
-            
-            s_array = getS_array();
-       
-            if (s_array[0] == -1)
-            {
-                safety_count = 0;
-                printf("UNSAFE");
-            }
-            else
-            {
-                safety_count = 1;
-                printf("SAFE");
+            if(c=='\n'){
+                r++;
             }
         }
-        else if (strstr(userCommand, "*"))
-        {
-            printf("These are the resources you can use:\n");
-            printSinglePointerData(available, resource_sum);
-            printf("Max number of resources:\n");
-            printDoublePointerData(max, customer_sum, resource_sum);
-            printf("These are the resources that have been allocated:\n");
-            printDoublePointerData(allocate, customer_sum, resource_sum);
-            printf("These are the resources that you need:\n");
-            printDoublePointerData(need_array, customer_sum, resource_sum);
-        }
-        else if (strstr(userCommand, "Run"))
-        {
-            s_array = getS_array();
-            if (safety_count == 1)
-            {
-                for (int g = 0; g < customer_sum; g++)
-                {
-                    int threadToRun = s_array[g];
-                    pthread_t tid;
-                    pthread_attr_t attr;
-                    pthread_attr_init(&attr);
-                    pthread_create(&tid, &attr, thread_run, (void *)&threadToRun);
-                    pthread_join(tid, NULL);
-                }
-            }
-            else
-            {
-                printf("UNSAFE\n");
+        r++;
+        o++;
+        temp.r = r;
+        temp.o = c;
+        fseek(file, 0, SEEK_SET);
+        int i=0;
+        int j=0;
+        while ((c = getc(file)) != EOF){
+            if(c>='0' && c<='9'){
+                 max[i][j] = c-48;
+            }else if( c==','){
+                j++;
+            }else if(c=='\n'){
+                i++;
+                j=0;
             }
         }
-        else if (strstr(userCommand, "exit"))
-        {
-            free(max);
-            free(allocate);
-            free(need_array);
-            free(available);
-            free(s_array);
-            return 0;
-        }
-        else
-        {
-            printf("ERROR TRY AGAIN WITH VALID INPTUS");
-        }
+        fclose(file);
     }
     return 0;
 }
-void *thread_run(void *t)
-{
-    int *threadId = (int *)t;
-    printf("ID", *threadId);
-    printf(" Number of resources that are allocated ");
-    for (int g = 0; g < resource_sum; g++)
-    {
-        printf("%d ", allocate[*threadId][g]);
+//allocate array
+int readInput(){ 
+    for (int i = 0; i < Size; i++) {
+        for (int j = 0; j < Size; j++) {
+            allocate[i][j] = 0;
+        }
     }
-  
-    printf(" These are the number of resources that are needed ");
-    for (int g = 0; g < resource_sum; g++)
-    {
-        printf("%d ", need_array[*threadId][g]);
+    bool check = true;
+    while(check){
+    char string[Size+3];
+    char *test = string;
+    printf("please specify the command: ");
+    scanf("%s",test);
+        if(*test == '*'){
+            check = false;
+            matrix_p();
+            //print here
+        }else if((*(test+2)-48)>=temp.r){ 
+            printf("incorrect\n");
+        //add new
+        }else if(*(test+1) == 'Q'){ 
+            int r = *(test+2)-48;
+            for(int i = 3; i<temp.o+3; i++){
+                allocate[r][i-3] += *(test+i)-48;
+            }
+            printf("done\n");
+            
+        }else if(*(test+1) == 'L'){ 
+            int r = *(test+2)-48;
+            for(int i = 3; i<temp.o+3; i++){
+                allocate[r][i-3] -= *(test+i)-48;
+            }
+            printf("done\n");
+        }
+        
     }
-  
-    printf(" These are the present resources available");
-    for (int g = 0; g < resource_sum; g++)
-    {
-        printf("%d ", available[g]);
-    }
-
-   // Thread Starts
-    sleep(1);
-  // Thread is finished
-    sleep(1);
-// thread released
-    sleep(1);
-// this is what is available in present
-    for (int g = 0; g < resource_sum; g++)
-    {
-        available[g] += allocate[*threadId][g];
-        printf("%d ", available[g]);
-    }
-
-
-    sleep(1);
-    pthread_exit(NULL);
+    return 0;
 }
-int *getS_array()
-{
-
-        int *work = malloc(sizeof(int) * resource_sum);
-    int *finished = malloc(sizeof(int) * customer_sum);
-	int *s_array = malloc(sizeof(int) * customer_sum);
-
-
-    for (int g = 0; g < resource_sum; g++)
-    {
-        work[g] = available[g];
+//safe state here
+int safe_state(){
+    for (int i = 0; i < temp.r; i++) {
+        for (int j = 0; j < temp.o; j++) {
+            needed[i][j] = max[i][j]-allocate[i][j];
+        }
     }
-  
-    int count = 0;
-    while (count < customer_sum)
-    {
-        int isSafe = 0;
-        for (int g = 0; g < customer_sum; g++)
-        {
-            if (finished[g] == 0)
-            {
-                int safeIteration = 1;
-                for (int y = 0; y < resource_sum; y++)
-                {
-                    if (need_array[g][y] > work[y])
-                    {
-                        safeIteration = 0;
-                        break;
-                    }
-                }
-                if (safeIteration == 1)
-                {
-                    s_array[count] = g;
-                    finished[g] = 1;
-                    count++;
-                    isSafe = 1;
-                    for (int y = 0; y < resource_sum; y++)
-                    {
-                        work[y] += allocate[g][y];
-                    }
-                }
+    
+    printf("Resource needed:\n");
+    for (int i = 0; i < temp.r; i++) {
+        for (int j = 0; j < temp.o; j++) {
+            printf("%d ", needed[i][j]);
+        }
+        printf("\n");
+    }
+    
+    for (int i = 0; i < temp.r; i++) {
+        for (int j = 0; j < temp.o; j++) {
+            if(needed[i][j]<0){
+                printf("unsafe");
+                return 1;
             }
         }
-
-        if (isSafe == 0)
-        {
-            for (int u = 0; u < customer_sum; u++)
-            {
-                s_array[u] = -1;
-            }
-            free(work);
-            free(finished);
-            return s_array;
-        }
-		//ERROR CHECKING DISTRIBUTION ENSURE SAFE STATE
     }
-    free(work);
-    free(finished);
-    return s_array;
+    
+    printf("Resources available:\n");
+        for (int j = 0; j < temp.o; j++) {
+            available_b[j] = available[j];
+             printf("%d ", available_b[j]);
+        }
+        for (int j = 0; j < temp.o; j++) {
+            Finish[j] = false;
+        }
+    return 0;
 }
-
-
-/*
-int bankers(){
-printf(“BANKERS ALGO”);
-// assume the state is unsafe
-//add bankers algorithm
-int safe = FALSE;
-//set up work array
-//initialize work array 
-int *Work;
-if ( !(Work = malloc(resources *sizeof(int) )))
-return -1 ;
-//copy the Available array into the temporary array
-for ( i = 0;i<processes;i++){
-//...Finish[i] == FALSEand… 
-if (Finish[i] ==FALSE){
-//...Need[i] <=Work[j]){
-printf(“UNSAFE”);
-printResources();
-return safe;
-}
-}
-for(j=0;j< resources; j ++) {
-Work [j] += Allocation[i][j];
-//Finish[j] = TRUE
-}
-//FIXME; does this go here?
-safe = TRUE;
-}
-}
-printf(“distribution as %s\n”, safe?”SAFE”: “UNSAFE”);
-printResources();
-return safe;
-}
-*/
-
-
-void printDoublePointerData(int **data, int m, int n)
-{
-    for (int g = 0; g < m; g++)
-    {
-        for (int y = 0; y < n; y++)
-        {
-            printf("%d", data[g][y]);
-            if (y < n - 1)
-                printf(" ");
+void matrix_p(){ 
+    printf("Resources allocated:\n");
+    for (int i = 0; i < temp.r; i++) {
+        for (int j = 0; j < temp.o; j++) {
+            printf("%d ", allocate[i][j]);
+        }
+        printf("\n");
+    }
+    printf("max Resources:\n");
+    for (int i = 0; i < temp.r; i++) {
+        for (int j = 0; j < temp.o; j++) {
+            printf("%d ", max[i][j]);
         }
         printf("\n");
     }
 }
-void printSinglePointerData(int *data, int m)
+
+
+
+
+int executed(void){// bankers algorithm
+    printf("\nEnter Command: Run\n");
+    int count_a = 0;
+    bool st_saf; 
+    while(count_a < temp.r){ 
+        for (int i = 0; i < temp.r; i++) {
+            st_saf = true;
+            int j;
+            for (j = 0; j < temp.o && st_saf; j++) {
+                if(!Finish[i]){
+                    if(needed[i][j] > available_b[j]){
+                        st_saf = false;
+                    }
+                }else{
+                    st_saf = false;
+                    break;
+                }
+            }
+            if(st_saf){
+                Thread *thread = NULL;
+                thread = (Thread*)malloc(sizeof(Thread));
+                thread->thread_id = i;
+                thread->state = 1;
+                thread->retVal = pthread_create(&(thread->handle),NULL,run_thread,thread); 
+                sleep(1); 
+                Finish[i] = true;
+                count_a++;
+                
+            }
+        }
+    }
+    printf("\nPlease specify your Command: \n");
+    return 0;
+}
+void logStart(int thread_ID)
 {
-    for (int g = 0; g < m; g++)
-    {
-        printf("%d", data[g]);
-        if (g < m - 1)
-            printf(" ");
+    printf("\n\t start thread %d .", thread_ID);
+}
+
+void logFinish(int thread_ID)
+{
+    printf("\n\t thread %d finished.", thread_ID);
+}
+
+void* run_thread(void* t)
+{
+    pthread_mutex_lock(&lock); 
+    
+    int i = ((Thread*)t)->thread_id;
+    printf("customer number is  %d :\n",i);
+    printf("\t resources to be allocated: ");
+    for (int j = 0; j < temp.o; j++) {
+        printf("%d ",allocate[i][j]);
     }
     printf("\n");
+    
+    printf("\t resources that are needed: ");
+    for (int j = 0; j < temp.o; j++) {
+        printf("%d ",needed[i][j]);
+    }
+    printf("\n");
+    
+    printf("\t available Resources: ");
+    for (int j = 0; j < temp.o; j++) {
+        printf("%d ",available_b[j]);
+    }
+    logStart(((Thread*)t)->thread_id);
+    logFinish(((Thread*)t)->thread_id);
+    printf("\n");
+    printf("\t Thread is releasing resources...\n");
+    
+    for (int j = 0; j < temp.o; j++) {
+        available_b[j] += allocate[i][j];
+    }
+    printf("\t New available Resources: ");
+    for (int j = 0; j < temp.o; j++) {
+        printf("%d ",available_b[j]);
+    }
+    printf("\n");
+    
+    pthread_mutex_unlock(&lock); 
+    pthread_exit(0);
 }
-int **readFile(char *fileName)
-{
-    FILE *in = fopen(fileName, "r");
-    if (!in)
-    {
-        printf("Child A: Error in opening input file...exiting with error code -1\n");
-        return NULL;
-    }
-    struct stat st;
-    fstat(fileno(in), &st);
-    char *fileContent = (char *)malloc(((int)st.st_size + 1) * sizeof(char));
-    fileContent[0] = '\0';
-    while (!feof(in))
-    {
-        char line[100];
-        if (fgets(line, 100, in) != NULL)
-        {
-            strncat(fileContent, line, strlen(line));
-        }
-    }
-    fclose(in);
-    char *command = NULL;
-    char *fileCopy = (char *)malloc((strlen(fileContent) + 1) * sizeof(char));
-    strcpy(fileCopy, fileContent);
-    command = strtok(fileCopy, "\r\n");
-    while (command != NULL)
-    {
-        customer_sum++;
-        command = strtok(NULL, "\r\n");
-    }
-    strcpy(fileCopy, fileContent);
-    char *lines[customer_sum];
-    int g = 0;
-    command = strtok(fileCopy, "\r\n");
-    while (command != NULL)
-    {
-        lines[g] = malloc(sizeof(command) * sizeof(char));
-        strcpy(lines[g], command);
-        g++;
-        command = strtok(NULL, "\r\n");
-    }
-    int **max = malloc(sizeof(int *) * customer_sum);
-    for (int y = 0; y < customer_sum; y++)
-    {
-        int *temp = malloc(sizeof(int) * resource_sum);
-        char *token = NULL;
-        int u = 0;
-        token = strtok(lines[y], ",");
-        while (token != NULL)
-        {
-            temp[u] = atoi(token);
-            u++;
-            token = strtok(NULL, ",");
-        }
-        max[y] = temp;
-    }
-    return max;
-}
+
+
+
+
+
