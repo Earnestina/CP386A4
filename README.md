@@ -27,7 +27,7 @@ https://drive.google.com/file/d/1Qw5rONlYGfLXPScdimiKcfWFFNt_PNaD/view?usp=shari
 ## Individual Contributions
 Earnestina Petergeorge - Testing, figuring out a bankers algorithm, helped with figuring out a code for the algorithm
 
-Gulnar Saharya - Makefile, implementing code for receiving file, main function
+Gulnar Saharya - Makefile, implementing code for receiving file, main function,readFile
 
 Mostly collaborated for all
 
