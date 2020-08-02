@@ -33,6 +33,13 @@ Mostly collaborated for all
 
 ## Features
   Use the Banker's algorithm 
-## Output
+## Tests
 Displayed in Screenshot
-  
+ 
+## Code Example
+
+## Authors
+
+## Credits
+
+## License 
