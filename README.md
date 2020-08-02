@@ -22,7 +22,7 @@ make
 ./a4 10 5 7 8
 ## Screenshots
 please go to 
-https://drive.google.com/file/d/1ypYWmNV5iTqvj7cg4FxEbSeYeoN5TQid/view?usp=sharing
+https://drive.google.com/file/d/1Qw5rONlYGfLXPScdimiKcfWFFNt_PNaD/view?usp=sharing
 
 ## Individual Contributions
 Earnestina Petergeorge - Testing, figuring out a bankers algorithm, helped with figuring out a code for the algorithm
