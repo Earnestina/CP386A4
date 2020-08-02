@@ -40,6 +40,17 @@ Displayed in Screenshot
 
 ## Authors
 
+Earnestina Petergeorge
+
+Gulnar Saharya 
+
 ## Credits
+Used the textbook
+
+Used the lecture notes
+
+geeks for geeks website had numerous resource
+
+
 
 ## License 
