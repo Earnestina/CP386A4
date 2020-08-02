@@ -25,14 +25,15 @@ please go to
 https://drive.google.com/file/d/1Qw5rONlYGfLXPScdimiKcfWFFNt_PNaD/view?usp=sharing
 
 ## Individual Contributions
-Earnestina Petergeorge - Testing, figuring out a bankers algorithm, helped with figuring out a code for the algorithm, readInput,safe_stat()
+Earnestina Petergeorge - Testing, figuring out a bankers algorithm, helped with figuring out a code for the algorithm, readInput,safe_state()
 
-Gulnar Saharya - Makefile, implementing code for receiving file, main function,readFile, executed, matrix_p
+Gulnar Saharya - Makefile, implementing code for receiving file, main function,readFile, executed, matrix_p, run_thread, 
 
-Mostly collaborated for all
+Mostly collaborated as a team for all
 
 ## Features
   Use the Banker's algorithm 
+  verify requests are safe to execute
 ## Tests
 Displayed in Screenshot
  
